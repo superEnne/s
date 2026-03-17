@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Technologies - Comprehensive Exam Reviewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .correct-answer { background-color: #dcfce7 !important; border-color: #22c55e !important; }
+        .wrong-answer { background-color: #fee2e2 !important; border-color: #ef4444 !important; }
+        .highlight-text-correct { color: #15803d; font-weight: 600; }
+        .highlight-text-wrong { color: #b91c1c; font-weight: 600; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        input:disabled, select:disabled { opacity: 0.8; cursor: not-allowed; }
+        
+        /* Custom Checkbox styles */
+        .checkbox-wrapper input:checked + div {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+        .checkbox-wrapper input:checked + div svg {
+            display: block;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased flex flex-col min-h-screen">
+
+    <!-- Sticky Header with Live Counters (Hidden on Start) -->
+    <header id="mainHeader" class="bg-blue-800 text-white shadow-md sticky top-0 z-50 hidden fade-in">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold">Platform Tech Reviewer</h1>
+                <p class="text-sm text-blue-200" id="progressText">Progress: 0 / 100 Items</p>
+            </div>
+            <div class="flex space-x-4">
+                <div class="bg-white rounded-lg px-4 py-2 shadow flex items-center space-x-2">
+                    <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-xl font-bold text-green-600" id="scoreCorrect">0</span>
+                </div>
+                <div class="bg-white rounded-lg px-4 py-2 shadow flex items-center space-x-2">
+                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-xl font-bold text-red-600" id="scoreWrong">0</span>
+                </div>
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div class="h-1.5 w-full bg-blue-900">
+            <div id="progressBar" class="h-1.5 bg-green-400 transition-all duration-300" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        
+        <!-- Start Screen -->
+        <div class="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 p-10 md:p-14 text-center fade-in" id="startScreen">
+            <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Platform Tech Reviewer</h1>
+            <p class="text-gray-600 mb-10 text-lg">Test your knowledge with 100 comprehensive items. Press <strong>Enter ↵</strong> to navigate faster during the quiz.</p>
+            
+            <label class="flex items-center justify-center space-x-3 mb-10 cursor-pointer checkbox-wrapper group inline-flex">
+                <input type="checkbox" id="shuffleToggle" class="hidden">
+                <div class="w-8 h-8 rounded bg-gray-100 border-2 border-gray-300 flex items-center justify-center transition group-hover:bg-gray-200">
+                    <svg class="w-5 h-5 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <span class="text-xl font-bold text-gray-700 select-none">Shuffle Questions</span>
+            </label>
+
+            <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-200 text-xl w-full">
+                Start Review
+            </button>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="w-full max-w-3xl bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hidden" id="quizContainer">
+            
+            <!-- Section Header -->
+            <div class="bg-gray-50 border-b border-gray-200 p-4 md:p-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1" id="sectionTitle">PART I: MULTIPLE CHOICE</h2>
+                    <p class="text-gray-500 text-sm" id="sectionDesc">Select the best answer based on the provided modules.</p>
+                </div>
+            </div>
+
+            <!-- Dynamic Question Content -->
+            <div class="p-6 md:p-8 min-h-[300px]" id="questionBody">
+                <!-- Populated via JS -->
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="bg-gray-50 border-t border-gray-200 p-4 md:p-6 flex justify-end items-center space-x-4">
+                <span id="feedbackMessage" class="font-bold text-lg flex-grow"></span>
+                <button id="btnCheck" onclick="verifyAnswer()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition duration-200 flex flex-col items-center">
+                    <span>Check Answer</span>
+                    <span class="text-xs text-blue-200 font-normal">Press Enter ↵</span>
+                </button>
+                <button id="btnNext" onclick="nextQuestion()" class="hidden bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-lg shadow transition duration-200 flex items-center justify-center">
+                    <div class="flex flex-col items-center">
+                        <span class="flex items-center">Next <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
+                        <span class="text-xs text-gray-300 font-normal">Press Enter ↵</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div class="w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-gray-200 p-10 text-center hidden" id="endScreen">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Quiz Completed!</h2>
+            <p class="text-gray-600 mb-8">You have answered all 100 items in the comprehensive reviewer.</p>
+            
+            <div class="flex justify-center space-x-8 mb-10">
+                <div class="text-center">
+                    <div class="text-5xl font-black text-green-500 mb-2" id="finalCorrect">0</div>
+                    <div class="text-gray-500 font-semibold uppercase tracking-wide">Correct</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl font-black text-red-500 mb-2" id="finalWrong">0</div>
+                    <div class="text-gray-500 font-semibold uppercase tracking-wide">Wrong</div>
+                </div>
+            </div>
+
+            <div class="text-2xl font-bold text-blue-700 bg-blue-50 py-4 rounded-xl border border-blue-100 mb-8" id="finalGrade">
+                Final Grade: 0%
+            </div>
+
+            <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-full shadow transition duration-200 text-lg">
+                Retake Quiz
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // --- DATA ---
+        const mcqData = [
+            { id: 1, q: "What is the basic formula for a Platform?", options: ["Hardware + Operating System + Users", "Hardware + Software + Networks", "Software + Code + Internet", "Mainframes + PCs + Mobile"], answer: 1 },
+            { id: 2, q: "Which generation of computing occurred between 1955-1965 and utilized Transistors and Batch Systems?", options: ["Generation 1", "Generation 2", "Generation 3", "Generation 4"], answer: 1 },
+            { id: 3, q: "Operating systems turn the ugly hardware details into _________ for the use of other software.", options: ["Beautiful interfaces", "Beautiful abstractions", "Complicated mechanisms", "Physical architectures"], answer: 1 },
+            { id: 4, q: "What type of server is described as 'ultrathin computers stored in racks'?", options: ["Mainframes", "Blade servers", "Multiprocessors", "Minicomputers"], answer: 1 },
+            { id: 5, q: "The Enterprise computing era, which moved toward integrating disparate networks and applications using Internet standards, started in what year?", options: ["1981", "1983", "1992", "2000"], answer: 2 },
+            { id: 6, q: "Which of the following is an example of an internet service provider mentioned in the IT infrastructure ecosystem?", options: ["Microsoft IIS", "Cisco", "AT&T, Verizon", "MySQL"], answer: 2 },
+            { id: 7, q: "Which operating system generation corresponds to PDAs, iOS, and Android?", options: ["1945-55", "1965-1980", "1980-Present", "1990-Present"], answer: 3 },
+            { id: 8, q: "What is the major cost of general-purpose computing?", options: ["Hardware", "Networks", "Software", "Electricity"], answer: 2 },
+            { id: 9, q: "A process is an abstraction of a ____________.", options: ["hardware component", "running program", "stored program", "user interface"], answer: 1 },
+            { id: 10, q: "A program is like a recipe, while a process is like:", options: ["The kitchen", "Baking", "The chef", "The ingredients"], answer: 1 },
+            { id: 11, q: "Which process state indicates that a process is runnable, but is temporarily stopped to let another process run?", options: ["Running", "Ready", "Blocked", "Terminated"], answer: 1 },
+            { id: 12, q: "What event causes an involuntary process termination?", options: ["Normal exit", "Error exit", "Fatal error", "System initialization"], answer: 2 },
+            { id: 13, q: "The part of the program where shared variables are accessed is called the:", options: ["Safe zone", "Buffer cache", "Critical region", "Mutual exclusion"], answer: 2 },
+            { id: 14, q: "What condition is required to avoid race conditions where no two processes may be simultaneously inside their critical regions?", options: ["No Starvation", "Progress", "No Assumption", "Mutual Exclusion"], answer: 3 },
+            { id: 15, q: "What is the term for multiple threads within the same process sharing an address space and all of its data?", options: ["Multiprogramming", "Multithreading", "Multiprocessing", "Multitasking"], answer: 1 },
+            { id: 16, q: "Which classical IPC problem models processes competing for exclusive access to a limited number of resources such as I/O devices?", options: ["Producer-consumer problem", "Readers-writers problem", "Dining philosophers problem", "Bounded-buffer problem"], answer: 2 },
+            { id: 17, q: "The process of choosing which process to run next when two or more of them are simultaneously in the ready state is called:", options: ["Routing", "Dispatching", "Multiprogramming", "Scheduling"], answer: 3 },
+            { id: 18, q: "Which of the following is a scheduling algorithm goal for Batch Systems?", options: ["Maximize response time", "Maximize jobs per hour (Throughput)", "Avoid losing data", "Meet users' expectations"], answer: 1 },
+            { id: 19, q: "In which scheduling algorithm does the running process keep the CPU until it voluntarily gives it up?", options: ["Preemptive scheduling", "Non-preemptive scheduling", "Round-Robin scheduling", "Earliest Deadline First"], answer: 1 },
+            { id: 20, q: "Which algorithm is optimal for Average Waiting Time if all jobs are available simultaneously?", options: ["First-Come, First-Served (FCFS)", "Shortest Job First (SJF)", "Round-Robin (RR)", "Priority Scheduling"], answer: 1 },
+            { id: 21, q: "In Round-Robin scheduling, what happens if the time slice (quantum) is too large?", options: ["It causes too many context switches.", "It behaves like a FIFO (FCFS) queue.", "It improves response for short interactive requests.", "CPU utilization becomes highly inefficient."], answer: 1 },
+            { id: 22, q: "Which scheduling algorithm uses different rules among multiple queues and allows jobs to migrate based on execution history?", options: ["Multiple-level feedback queues (MLFQ)", "Earliest Deadline First (EDF)", "Shortest Job First (SJF)", "Priority Scheduling"], answer: 0 },
+            { id: 23, q: "The amount of time a process has been waiting in the ready queue is called:", options: ["Turnaround time", "Response time", "Waiting time", "Throughput"], answer: 2 },
+            { id: 24, q: "Which algorithm always picks the job with the closest deadline to run?", options: ["Round-Robin", "Shortest Job First", "Earliest Deadline First", "Priority Scheduling"], answer: 2 },
+            { id: 25, q: "The exchange of data between two devices via some form of transmission medium is called:", options: ["Telecommunication", "Data communications", "Networking", "Logical topology"], answer: 1 },
+            { id: 26, q: "Which data flow type allows transmission in both directions, but only one direction at a time?", options: ["Simplex", "Half-duplex", "Full-duplex", "Semi-simplex"], answer: 1 },
+            { id: 27, q: "Which type of data transmission transfers multiple bits at the same time using buses of data?", options: ["Serial", "Synchronous", "Asynchronous", "Parallel"], answer: 3 },
+            { id: 28, q: "Serial communication is often better over long distances than parallel because it:", options: ["Needs more wires", "Occupies more space", "Has high crosstalk", "Has less average capacitance"], answer: 2 },
+            { id: 29, q: "A network organized around an individual person within a single building is known as a:", options: ["LAN", "WAN", "MAN", "PAN"], answer: 3 },
+            { id: 30, q: "Which physical topology connects every station to every other station directly?", options: ["Star", "Bus", "Ring", "Mesh"], answer: 3 },
+            { id: 31, q: "A measure of the data rate in bits per second (b/s) of a given link is called its:", options: ["Scalability", "Speed", "Reliability", "Availability"], answer: 1 },
+            { id: 32, q: "Which type of connection involves multiple recipients of a single transmission?", options: ["Point-to-point", "Multipoint", "Simplex", "Dedicated"], answer: 1 },
+            { id: 33, q: "Files are logical units of information created by __________.", options: ["Users", "Hardware", "Processes", "Directories"], answer: 2 },
+            { id: 34, q: "A file structure where a file is a sequence of fixed-length records generally matched what older medium?", options: ["Floppy disks", "Magnetic tapes", "Punched cards", "USB drives"], answer: 2 },
+            { id: 35, q: "Which file type is used to model disks?", options: ["Regular files", "Directories", "Character special files", "Block special files"], answer: 3 },
+            { id: 36, q: "An essential file access method for applications like database systems where bytes/records can be read in any order is:", options: ["Sequential access", "Indexed access", "Random-access", "Linked access"], answer: 2 },
+            { id: 37, q: "A system call used to delete a link to a file is named:", options: ["delete", "unlink", "remove", "rmdir"], answer: 1 },
+            { id: 38, q: "Which disk layout strategy points from each block to the next, with the directory pointing to the first?", options: ["Contiguous allocation", "Indexed allocation", "Linked list allocation", "i-nodes"], answer: 2 },
+            { id: 39, q: "What Unix structure implements an indexed structure for files and contains a number of file block pointers?", options: ["MBR", "Partition table", "Superblock", "i-node"], answer: 3 },
+            { id: 40, q: "What is used to cache file blocks in memory to capture locality and make a disk perform like memory?", options: ["Master File Table", "File buffer cache", "Page table", "Bitmap"], answer: 1 }
+        ];
+
+        const tfData = [
+            { id: 41, q: "A platform is any base of technologies on which other technologies or processes are built.", ans: true },
+            { id: 42, q: "Multiprogramming was first introduced during the Vacuum Tubes generation of computing.", ans: false },
+            { id: 43, q: "The lowest layer of a process-structured operating system handles interrupts and scheduling.", ans: true },
+            { id: 44, q: "A process is something that may be stored on a disk, not doing anything.", ans: false },
+            { id: 45, q: "A process in the 'Blocked' state is unable to run until some external event happens.", ans: false },
+            { id: 46, q: "Threads are heavier weight than processes, making them slower to create and destroy.", ans: false },
+            { id: 47, q: "Disabling interrupts is an effective way to avoid race conditions in a multicore (multiprocessor) system.", ans: false },
+            { id: 48, q: "Scheduling is deciding which process should occupy the resource (CPU, disk, etc.).", ans: true },
+            { id: 49, q: "Turnaround time is the amount of time to execute a particular process from the time it entered.", ans: true },
+            { id: 50, q: "First-Come, First-Served (FCFS) scheduling is typically preemptive.", ans: false },
+            { id: 51, q: "User-level threads require a full context switch managed by the kernel.", ans: false },
+            { id: 52, q: "Simplex data flow means the direction of data is one-way all the time.", ans: true },
+            { id: 53, q: "Serial communication is cheaper and less bulky compared to parallel communication.", ans: true },
+            { id: 54, q: "A bus topology uses a central hub to connect all stations.", ans: false },
+            { id: 55, q: "Scalability indicates the dependability of the components that make up the network.", ans: false },
+            { id: 56, q: "The file system is the part of the operating system that deals with managing files.", ans: true },
+            { id: 57, q: "A file with a .bak extension is typically an executable object file.", ans: false },
+            { id: 58, q: "In contiguous allocation, a file spans multiple consecutive disk blocks, which can cause fragmentation.", ans: true },
+            { id: 59, q: "The file buffer cache does not compete with Virtual Memory (VM).", ans: false },
+            { id: 60, q: "A bit map used to keep track of free blocks represents free blocks by 1s and allocated blocks by 0s.", ans: false }
+        ];
+
+        const matchLegend = [
+            "A. Compressed archive", "B. Input for the TEX formatting program",
+            "C. Single transmitter and receiver network connection", "D. PostScript file",
+            "E. Object file (compiler output, not yet linked)", "F. Direction of data at time 1 is one way, and opposite at time 2",
+            "G. Number of jobs completed in unit time", "H. All stations connect to a central Hub",
+            "I. Often measured as MTBF (mean time between failures)", "J. World Wide Web HTML document"
+        ];
+
+        const matchData = [
+            { id: 61, label: ".html", ans: "J" }, { id: 62, label: ".ps", ans: "D" },
+            { id: 63, label: ".zip", ans: "A" }, { id: 64, label: ".tex", ans: "B" },
+            { id: 65, label: ".o", ans: "E" }, { id: 66, label: "Throughput", ans: "G" },
+            { id: 67, label: "Reliability", ans: "I" }, { id: 68, label: "Point-to-point", ans: "C" },
+            { id: 69, label: "Half-duplex", ans: "F" }, { id: 70, label: "Star Topology", ans: "H" }
+        ];
+
+        const enumData = [
+            { start: 71, end: 73, q: "What are the three states a process may be in?", valid: [['running'], ['ready'], ['blocked']] },
+            { start: 74, end: 77, q: "What are the four events which cause process termination?", valid: [['normal'], ['error'], ['fatal'], ['killed', 'another']] },
+            { start: 78, end: 81, q: "Give 4 of the 7 network characteristics.", valid: [['topology'], ['speed'], ['cost'], ['reliability'], ['scalability'], ['availability'], ['security']] },
+            { start: 82, end: 84, q: "Give 3 categories of networks based on size.", valid: [['lan', 'local'], ['wan', 'wide'], ['pan', 'personal'], ['man', 'metropolitan']] },
+            { start: 85, end: 87, q: "Name the 3 Interactive Systems scheduling algorithms.", valid: [['round', 'robin'], ['priority'], ['mlfq', 'feedback', 'multi']] },
+            { start: 88, end: 90, q: "Name 3 standard Physical Topologies.", valid: [['mesh'], ['star'], ['bus'], ['ring']] }
+        ];
+
+        const compDataA = [
+            { id: 91, q: "Start time of P1?", ans: "0" }, { id: 92, q: "Finish time of P1?", ans: "24" },
+            { id: 93, q: "Waiting time of P2?", ans: "24" }, { id: 94, q: "Waiting time of P3?", ans: "27" },
+            { id: 95, q: "Average Waiting Time (AWT)?", ans: "17" }
+        ];
+
+        const compDataB = [
+            { id: 96, q: "Which process will Start first? (Format: Px)", ans: "P4" }, { id: 97, q: "Waiting Time of P1?", ans: "3" },
+            { id: 98, q: "Finish time of P3?", ans: "16" }, { id: 99, q: "Waiting Time of P2?", ans: "16" },
+            { id: 100, q: "Average Waiting Time (AWT)?", ans: "7" }
+        ];
+
+        // --- STATE AND SEQUENCE COMPILATION ---
+        let quizSequence = [];
+        mcqData.forEach(d => quizSequence.push({ type: 'mcq', sectionTitle: 'PART I: MULTIPLE CHOICE', desc: 'Select the best answer.', data: d, itemsCount: 1 }));
+        tfData.forEach(d => quizSequence.push({ type: 'tf', sectionTitle: 'PART II: TRUE OR FALSE', desc: 'Select True or False.', data: d, itemsCount: 1 }));
+        matchData.forEach(d => quizSequence.push({ type: 'match', sectionTitle: 'PART III: MATCHING TYPE', desc: 'Select the correct option from Column B.', data: d, itemsCount: 1 }));
+        enumData.forEach(d => quizSequence.push({ type: 'enum', sectionTitle: 'PART IV: ENUMERATION', desc: 'Type the requested items. Order does not matter.', data: d, itemsCount: d.end - d.start + 1 }));
+        quizSequence.push({ type: 'comp', sectionTitle: 'PART V: COMPUTATION', desc: 'Scenario A: FCFS. P1(24), P2(3), P3(4) arrive at Time 0.', data: compDataA, itemsCount: 5 });
+        quizSequence.push({ type: 'comp', sectionTitle: 'PART V: COMPUTATION', desc: 'Scenario B: SJF. P1(6), P2(8), P3(7), P4(3) arrive at Time 0.', data: compDataB, itemsCount: 5 });
+
+        let currentStep = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let itemsAnswered = 0;
+        let isQuizActive = false;
+        const totalItems = 100;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startQuiz() {
+            const isShuffle = document.getElementById('shuffleToggle').checked;
+            if (isShuffle) {
+                shuffleArray(quizSequence);
+            }
+            
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('mainHeader').classList.remove('hidden');
+            document.getElementById('quizContainer').classList.remove('hidden');
+            document.getElementById('quizContainer').classList.add('fade-in');
+            isQuizActive = true;
+            
+            renderCard();
+        }
+
+        // --- RENDER LOGIC ---
+        function renderCard() {
+            if (currentStep >= quizSequence.length) {
+                showEndScreen();
+                return;
+            }
+
+            const step = quizSequence[currentStep];
+            document.getElementById('sectionTitle').innerText = step.sectionTitle;
+            document.getElementById('sectionDesc').innerText = step.desc;
+            document.getElementById('btnCheck').classList.remove('hidden');
+            document.getElementById('btnNext').classList.add('hidden');
+            document.getElementById('feedbackMessage').innerHTML = '';
+
+            const body = document.getElementById('questionBody');
+            body.innerHTML = '';
+
+            if (step.type === 'mcq') {
+                let optionsHtml = step.data.options.map((opt, i) => `
+                    <label class="flex items-center space-x-3 p-4 rounded-xl border-2 border-gray-200 cursor-pointer hover:bg-gray-50 transition w-full" id="lbl-mcq-${i}">
+                        <input type="radio" name="input-ans" value="${i}" class="w-5 h-5 text-blue-600 focus:ring-blue-500">
+                        <span class="text-gray-700 font-medium text-lg"><span class="font-bold text-gray-400 mr-1">${['A', 'B', 'C', 'D'][i]})</span> ${opt}</span>
+                    </label>
+                `).join('');
+                body.innerHTML = `
+                    <h3 class="text-xl font-bold mb-6 text-gray-800"><span class="text-blue-600 mr-2">${step.data.id}.</span> ${step.data.q}</h3>
+                    <div class="space-y-3">${optionsHtml}</div>
+                `;
+            } 
+            else if (step.type === 'tf') {
+                body.innerHTML = `
+                    <h3 class="text-xl font-bold mb-8 text-gray-800"><span class="text-blue-600 mr-2">${step.data.id}.</span> ${step.data.q}</h3>
+                    <div class="flex space-x-6">
+                        <label class="flex-1 flex items-center justify-center space-x-3 p-5 rounded-xl border-2 border-gray-200 cursor-pointer hover:bg-gray-50 transition" id="lbl-tf-true">
+                            <input type="radio" name="input-ans" value="true" class="w-5 h-5 text-blue-600">
+                            <span class="text-xl font-bold text-gray-700">TRUE <span class="text-sm font-normal text-gray-400 ml-1">(T)</span></span>
+                        </label>
+                        <label class="flex-1 flex items-center justify-center space-x-3 p-5 rounded-xl border-2 border-gray-200 cursor-pointer hover:bg-gray-50 transition" id="lbl-tf-false">
+                            <input type="radio" name="input-ans" value="false" class="w-5 h-5 text-blue-600">
+                            <span class="text-xl font-bold text-gray-700">FALSE <span class="text-sm font-normal text-gray-400 ml-1">(F)</span></span>
+                        </label>
+                    </div>
+                `;
+            }
+            else if (step.type === 'match') {
+                let optionsList = matchLegend.map(l => `<li class="mb-1">${l}</li>`).join('');
+                let selectOptions = ['A','B','C','D','E','F','G','H','I','J'].map(o => `<option value="${o}">${o}</option>`).join('');
+                
+                body.innerHTML = `
+                    <div class="bg-blue-50 text-blue-900 text-sm p-4 rounded-lg mb-6 shadow-inner border border-blue-100">
+                        <ul class="grid md:grid-cols-2 gap-x-4">${optionsList}</ul>
+                    </div>
+                    <div class="flex items-center justify-between bg-white p-6 rounded-xl border-2 border-gray-200 shadow-sm" id="lbl-match">
+                        <h3 class="text-xl font-bold text-gray-800"><span class="text-blue-600 mr-2">${step.data.id}.</span> ${step.data.label}</h3>
+                        <select id="input-ans" class="text-lg border-2 border-gray-300 rounded-lg p-3 bg-white focus:ring-blue-500 focus:border-blue-500 outline-none w-32 font-bold text-center">
+                            <option value="">--</option>${selectOptions}
+                        </select>
+                    </div>
+                    <p id="match-correct-text" class="hidden mt-4 text-green-700 font-bold text-center text-lg"></p>
+                `;
+            }
+            else if (step.type === 'enum') {
+                let inputsHtml = '';
+                for(let i = step.data.start; i <= step.data.end; i++) {
+                    inputsHtml += `
+                        <div class="flex items-center space-x-4">
+                            <span class="text-blue-600 font-bold text-lg w-8 text-right">${i}.</span>
+                            <input type="text" id="enum-${i}" class="flex-1 border-2 border-gray-300 rounded-lg p-3 text-lg focus:ring-2 focus:ring-blue-500 outline-none transition enum-input" placeholder="Enter answer...">
+                        </div>
+                    `;
+                }
+                body.innerHTML = `
+                    <h3 class="text-xl font-bold mb-6 text-gray-800">${step.data.start}-${step.data.end}: ${step.data.q}</h3>
+                    <div class="space-y-4" id="enum-container">
+                        ${inputsHtml}
+                    </div>
+                `;
+            }
+            else if (step.type === 'comp') {
+                let inputsHtml = step.data.map(item => `
+                    <div class="flex items-center justify-between p-3 border-b border-gray-100">
+                        <label class="font-bold text-gray-700 text-lg"><span class="text-blue-600 mr-2">${item.id}.</span> ${item.q}</label>
+                        <div class="flex flex-col items-end">
+                            <input type="text" id="comp-${item.id}" class="border-2 border-gray-300 rounded-lg p-2 text-center text-lg w-24 font-bold focus:ring-2 focus:ring-blue-500 outline-none transition comp-input" placeholder="...">
+                            <span id="comp-ans-${item.id}" class="hidden text-green-600 text-sm font-bold mt-1"></span>
+                        </div>
+                    </div>
+                `).join('');
+                body.innerHTML = `
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm" id="comp-container">
+                        ${inputsHtml}
+                    </div>
+                `;
+            }
+
+            // Quality of Life: Auto focus first input element for typing tasks
+            setTimeout(() => {
+                const firstInput = document.querySelector('select, input[type="text"]');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            }, 50);
+        }
+
+        // --- VERIFICATION LOGIC ---
+        function verifyAnswer() {
+            const step = quizSequence[currentStep];
+            let stepCorrect = 0;
+            let stepWrong = 0;
+            const feedbackEl = document.getElementById('feedbackMessage');
+
+            // Prevent re-checking
+            document.getElementById('btnCheck').classList.add('hidden');
+            document.getElementById('btnNext').classList.remove('hidden');
+
+            if (step.type === 'mcq') {
+                const selected = document.querySelector('input[name="input-ans"]:checked');
+                const userVal = selected ? parseInt(selected.value) : -1;
+                const isCorrect = userVal === step.data.answer;
+
+                for(let i=0; i<4; i++){
+                    let lbl = document.getElementById(`lbl-mcq-${i}`);
+                    document.querySelector(`input[value="${i}"]`).disabled = true;
+                    if (i === step.data.answer) lbl.classList.add('correct-answer');
+                    else if (userVal === i) lbl.classList.add('wrong-answer');
+                }
+
+                if (isCorrect) { stepCorrect = 1; feedbackEl.innerHTML = '<span class="text-green-600">Correct!</span>'; }
+                else { stepWrong = 1; feedbackEl.innerHTML = '<span class="text-red-600">Incorrect!</span>'; }
+            }
+            else if (step.type === 'tf') {
+                const selected = document.querySelector('input[name="input-ans"]:checked');
+                const userVal = selected ? selected.value : null;
+                const isCorrect = userVal === step.data.ans.toString();
+
+                let lblTrue = document.getElementById(`lbl-tf-true`);
+                let lblFalse = document.getElementById(`lbl-tf-false`);
+                document.querySelector('input[value="true"]').disabled = true;
+                document.querySelector('input[value="false"]').disabled = true;
+
+                if (step.data.ans === true) lblTrue.classList.add('correct-answer');
+                else lblFalse.classList.add('correct-answer');
+
+                if (!isCorrect && userVal === "true") lblTrue.classList.add('wrong-answer');
+                if (!isCorrect && userVal === "false") lblFalse.classList.add('wrong-answer');
+
+                if (isCorrect) { stepCorrect = 1; feedbackEl.innerHTML = '<span class="text-green-600">Correct!</span>'; }
+                else { stepWrong = 1; feedbackEl.innerHTML = '<span class="text-red-600">Incorrect!</span>'; }
+            }
+            else if (step.type === 'match') {
+                const selectEl = document.getElementById('input-ans');
+                const userVal = selectEl.value;
+                const isCorrect = userVal === step.data.ans;
+                const container = document.getElementById('lbl-match');
+                const ansText = document.getElementById('match-correct-text');
+                
+                selectEl.disabled = true;
+                if(isCorrect) {
+                    container.classList.add('correct-answer');
+                    stepCorrect = 1;
+                    feedbackEl.innerHTML = '<span class="text-green-600">Correct!</span>';
+                } else {
+                    container.classList.add('wrong-answer');
+                    ansText.innerText = `Correct Answer: ${step.data.ans}`;
+                    ansText.classList.remove('hidden');
+                    stepWrong = 1;
+                    feedbackEl.innerHTML = '<span class="text-red-600">Incorrect!</span>';
+                }
+            }
+            else if (step.type === 'enum') {
+                let userInputs = [];
+                for(let i = step.data.start; i <= step.data.end; i++) {
+                    const el = document.getElementById(`enum-${i}`);
+                    el.disabled = true;
+                    userInputs.push({id: i, val: el.value.toLowerCase().trim(), el: el});
+                }
+
+                let matchedIndices = new Set();
+                userInputs.forEach(inputObj => {
+                    let isCorrect = false;
+                    if (inputObj.val) {
+                        for(let i=0; i<step.data.valid.length; i++) {
+                            if (matchedIndices.has(i)) continue;
+                            if (step.data.valid[i].some(keyword => inputObj.val.includes(keyword))) {
+                                isCorrect = true;
+                                matchedIndices.add(i);
+                                break;
+                            }
+                        }
+                    }
+                    if (isCorrect) {
+                        stepCorrect++;
+                        inputObj.el.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                    } else {
+                        stepWrong++;
+                        inputObj.el.classList.add('bg-red-50', 'border-red-500', 'text-red-800');
+                    }
+                });
+                feedbackEl.innerHTML = `<span class="${stepCorrect > 0 ? 'text-green-600' : 'text-red-600'}">Got ${stepCorrect} / ${step.itemsCount} correct!</span>`;
+            }
+            else if (step.type === 'comp') {
+                step.data.forEach(item => {
+                    const inputEl = document.getElementById(`comp-${item.id}`);
+                    const ansText = document.getElementById(`comp-ans-${item.id}`);
+                    inputEl.disabled = true;
+                    const userVal = inputEl.value.trim().toUpperCase();
+                    const isCorrect = userVal === item.ans.toUpperCase();
+
+                    if(isCorrect) {
+                        stepCorrect++;
+                        inputEl.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                    } else {
+                        stepWrong++;
+                        inputEl.classList.add('bg-red-50', 'border-red-500', 'text-red-800');
+                        ansText.innerText = item.ans;
+                        ansText.classList.remove('hidden');
+                    }
+                });
+                feedbackEl.innerHTML = `<span class="${stepCorrect > 0 ? 'text-green-600' : 'text-red-600'}">Got ${stepCorrect} / ${step.itemsCount} correct!</span>`;
+            }
+
+            // Update Global Scores
+            correctCount += stepCorrect;
+            wrongCount += stepWrong;
+            itemsAnswered += step.itemsCount;
+
+            document.getElementById('scoreCorrect').innerText = correctCount;
+            document.getElementById('scoreWrong').innerText = wrongCount;
+            document.getElementById('progressText').innerText = `Progress: ${itemsAnswered} / ${totalItems} Items`;
+            document.getElementById('progressBar').style.width = `${(itemsAnswered / totalItems) * 100}%`;
+        }
+
+        function nextQuestion() {
+            currentStep++;
+            renderCard();
+        }
+
+        function showEndScreen() {
+            isQuizActive = false;
+            document.getElementById('quizContainer').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('hidden');
+            document.getElementById('endScreen').classList.add('fade-in');
+            
+            document.getElementById('finalCorrect').innerText = correctCount;
+            document.getElementById('finalWrong').innerText = wrongCount;
+            
+            const gradeEl = document.getElementById('finalGrade');
+            const percent = Math.round((correctCount / totalItems) * 100);
+            gradeEl.innerText = `Final Grade: ${percent}%`;
+            
+            if (percent >= 75) {
+                gradeEl.classList.replace('text-blue-700', 'text-green-700');
+                gradeEl.classList.replace('bg-blue-50', 'bg-green-50');
+                gradeEl.classList.replace('border-blue-100', 'border-green-200');
+            } else {
+                gradeEl.classList.replace('text-blue-700', 'text-red-700');
+                gradeEl.classList.replace('bg-blue-50', 'bg-red-50');
+                gradeEl.classList.replace('border-blue-100', 'border-red-200');
+            }
+        }
+
+        // Quality of Life Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (!isQuizActive) return;
+
+            const btnCheck = document.getElementById('btnCheck');
+            const btnNext = document.getElementById('btnNext');
+            
+            // Handle Enter Key for submission / moving to next
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent accidental form submissions
+                if (!btnCheck.classList.contains('hidden')) {
+                    verifyAnswer();
+                } else if (!btnNext.classList.contains('hidden')) {
+                    nextQuestion();
+                }
+                return;
+            }
+
+            // Handle Quick Selection for MCQ and T/F while answering
+            if (!btnCheck.classList.contains('hidden')) {
+                const step = quizSequence[currentStep];
+                const key = e.key.toLowerCase();
+                
+                if (step.type === 'mcq') {
+                    // Map keys 1-4 and a-d to options 0-3
+                    const mcqMap = {'1': 0, '2': 1, '3': 2, '4': 3, 'a': 0, 'b': 1, 'c': 2, 'd': 3};
+                    if (mcqMap[key] !== undefined) {
+                        const inputs = document.getElementsByName('input-ans');
+                        if(inputs[mcqMap[key]]) {
+                            inputs[mcqMap[key]].checked = true;
+                        }
+                    }
+                } else if (step.type === 'tf') {
+                    if (key === 't') {
+                        document.querySelector('input[value="true"]').checked = true;
+                    } else if (key === 'f') {
+                        document.querySelector('input[value="false"]').checked = true;
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
